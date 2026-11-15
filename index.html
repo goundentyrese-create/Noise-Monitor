@@ -12,7 +12,6 @@
       --glass-highlight: rgba(255, 255, 255, 0.28);
       --glass-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 var(--glass-highlight);
       
-      /* Default Colour Scheme: Emerald */
       --accent: #34d399;
       --accent-rgb: 52, 211, 153;
       --orb-1: rgba(16, 185, 129, 0.38);
@@ -395,7 +394,7 @@
       width: fit-content;
       max-width: 100%;
       margin: 0 auto;
-      opacity: 0.4;
+      opacity: 0.45;
       transition: opacity 0.3s ease;
     }
 
@@ -585,21 +584,21 @@
   </div>
 
   <footer id="control-dock" class="liquid-glass setup-mode">
-    <button type="button" id="start-btn" class="primary">Start Mic</button>
-    <button type="button" id="reset-btn">Reset</button>
+    <button type="button" id="start-btn" class="primary" onclick="startMic()">Start Mic</button>
+    <button type="button" id="reset-btn" onclick="resetMonitor()">Reset</button>
 
     <div class="divider"></div>
 
     <div class="segmented-control">
-      <button type="button" class="seg-btn active" data-set-theme="stealth">Stealth</button>
-      <button type="button" class="seg-btn" data-set-theme="football">Football</button>
+      <button type="button" id="btn-stealth" class="seg-btn active" onclick="setTheme('stealth')">Stealth</button>
+      <button type="button" id="btn-football" class="seg-btn" onclick="setTheme('football')">Football</button>
     </div>
 
     <div class="swatches">
-      <button type="button" class="swatch active" data-set-color="emerald" style="background: #34d399;" title="Emerald"></button>
-      <button type="button" class="swatch" data-set-color="blue" style="background: #38bdf8;" title="Electric Blue"></button>
-      <button type="button" class="swatch" data-set-color="sunset" style="background: #fb923c;" title="Sunset"></button>
-      <button type="button" class="swatch" data-set-color="purple" style="background: #c084fc;" title="Ultraviolet"></button>
+      <button type="button" id="col-emerald" class="swatch active" onclick="setColor('emerald')" style="background: #34d399;" title="Emerald"></button>
+      <button type="button" id="col-blue" class="swatch" onclick="setColor('blue')" style="background: #38bdf8;" title="Electric Blue"></button>
+      <button type="button" id="col-sunset" class="swatch" onclick="setColor('sunset')" style="background: #fb923c;" title="Sunset"></button>
+      <button type="button" id="col-purple" class="swatch" onclick="setColor('purple')" style="background: #c084fc;" title="Ultraviolet"></button>
     </div>
 
     <div class="divider"></div>
@@ -616,266 +615,303 @@
 
     <div class="divider"></div>
 
-    <button type="button" id="manual-strike-btn" class="danger">Alert</button>
+    <button type="button" id="manual-strike-btn" class="danger" onclick="manualStrike()">Alert</button>
   </footer>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      let audioCtx, analyser, dataArray, source;
-      let isRunning = false;
-      let isLockedOut = false;
-      let progress = 0;
-      let strikes = 0;
-      let lastStrikeTime = 0;
-      let lastFrameTime = Date.now();
-      let currentTheme = "stealth";
-      let currentState = "standby";
+    let audioCtx, analyser, dataArray, source;
+    let isRunning = false;
+    let isLockedOut = false;
+    let progress = 0;
+    let strikes = 0;
+    let lastStrikeTime = 0;
+    let lastFrameTime = Date.now();
+    let currentTheme = "stealth";
+    let currentState = "standby";
 
-      const themes = {
-        stealth: {
-          kicker: "Acoustic Stealth Protocol",
-          strikesLabel: "Alerts",
-          rewardTag: "Target",
-          strikeBtn: "Alert",
-          lockoutTitle: "System Lockdown",
-          lockoutDesc: "Noise threshold breached. Decryption paused.",
-          status: {
-            standby: "Standby",
-            active: "Stealth Optimal",
-            warning: "Approaching Limit",
-            danger: "Noise Spike",
-            unlocked: "Target Unlocked"
-          }
-        },
-        football: {
-          kicker: "Matchday Focus // 90' Protocol",
-          strikesLabel: "Cards",
-          rewardTag: "Trophy",
-          strikeBtn: "Foul",
-          lockoutTitle: "Red Card // Sin Bin",
-          lockoutDesc: "Crowd too loud. Match play suspended for 10s.",
-          status: {
-            standby: "Pre-Match",
-            active: "In Possession",
-            warning: "Referee Warning",
-            danger: "VAR Check // Foul!",
-            unlocked: "Full Time // Victory!"
-          }
+    const themes = {
+      stealth: {
+        kicker: "Acoustic Stealth Protocol",
+        strikesLabel: "Alerts",
+        rewardTag: "Target",
+        strikeBtn: "Alert",
+        lockoutTitle: "System Lockdown",
+        lockoutDesc: "Noise threshold breached. Decryption paused.",
+        status: {
+          standby: "Standby",
+          active: "Stealth Optimal",
+          warning: "Approaching Limit",
+          danger: "Noise Spike",
+          unlocked: "Target Unlocked"
         }
-      };
+      },
+      football: {
+        kicker: "Matchday Focus // 90 Min Protocol",
+        strikesLabel: "Cards",
+        rewardTag: "Trophy",
+        strikeBtn: "Foul",
+        lockoutTitle: "Red Card // Sin Bin",
+        lockoutDesc: "Crowd too loud. Match play suspended for 10s.",
+        status: {
+          standby: "Pre-Match",
+          active: "In Possession",
+          warning: "Referee Warning",
+          danger: "VAR Check // Foul!",
+          unlocked: "Full Time // Victory!"
+        }
+      }
+    };
 
-      const canvas = document.getElementById("visualizer");
-      const ctx = canvas.getContext("2d");
-      const statusPill = document.getElementById("status-pill");
-      const statusText = document.getElementById("status-text");
-      const progressFill = document.getElementById("progress-fill");
-      const percentText = document.getElementById("percent-text");
-      const thresholdSlider = document.getElementById("threshold");
-      const durationInput = document.getElementById("duration");
-      const lockoutOverlay = document.getElementById("lockout-overlay");
-      const cooldownTimer = document.getElementById("cooldown-timer");
-      const controlDock = document.getElementById("control-dock");
+    const canvas = document.getElementById("visualizer");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function setTheme(themeName) {
+      currentTheme = themeName;
+      document.body.setAttribute("data-theme", themeName);
+
+      document.getElementById("btn-stealth").classList.toggle("active", themeName === "stealth");
+      document.getElementById("btn-football").classList.toggle("active", themeName === "football");
+
+      const t = themes[themeName];
+      document.getElementById("theme-kicker").textContent = t.kicker;
+      document.getElementById("strikes-label").textContent = t.strikesLabel;
+      document.getElementById("reward-tag").textContent = t.rewardTag;
+      document.getElementById("manual-strike-btn").textContent = t.strikeBtn;
+      document.getElementById("lockout-title").textContent = t.lockoutTitle;
+      document.getElementById("lockout-desc").textContent = t.lockoutDesc;
+
+      updateStatus(currentState);
+    }
+
+    function setColor(colorName) {
+      document.body.setAttribute("data-color", colorName);
+      ["emerald", "blue", "sunset", "purple"].forEach(c => {
+        document.getElementById("col-" + c).classList.toggle("active", c === colorName);
+      });
+    }
+
+    async function startMic() {
+      if (isRunning) return;
       const startBtn = document.getElementById("start-btn");
-
-      function resizeCanvas() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-      }
-      window.addEventListener("resize", resizeCanvas);
-      resizeCanvas();
-
-      // Theme Switcher
-      document.querySelectorAll("[data-set-theme]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          currentTheme = btn.dataset.setTheme;
-          document.body.dataset.theme = currentTheme;
-
-          document.querySelectorAll("[data-set-theme]").forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-
-          const t = themes[currentTheme];
-          document.getElementById("theme-kicker").textContent = t.kicker;
-          document.getElementById("strikes-label").textContent = t.strikesLabel;
-          document.getElementById("reward-tag").textContent = t.rewardTag;
-          document.getElementById("manual-strike-btn").textContent = t.strikeBtn;
-          document.getElementById("lockout-title").textContent = t.lockoutTitle;
-          document.getElementById("lockout-desc").textContent = t.lockoutDesc;
-
-          updateStatus(currentState);
-        });
-      });
-
-      // Colour Scheme Switcher
-      document.querySelectorAll("[data-set-color]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          document.body.dataset.color = btn.dataset.setColor;
-          document.querySelectorAll("[data-set-color]").forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-        });
-      });
-
-      // Mic Initialization
-      startBtn.addEventListener("click", async () => {
-        if (isRunning) return;
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          audioCtx = new AudioContextClass();
-          if (audioCtx.state === "suspended") {
-            await audioCtx.resume();
-          }
-          analyser = audioCtx.createAnalyser();
-          analyser.fftSize = 128;
-          source = audioCtx.createMediaStreamSource(stream);
-          source.connect(analyser);
-          dataArray = new Uint8Array(analyser.frequencyBinCount);
-          
-          isRunning = true;
-          lastFrameTime = Date.now();
-          resizeCanvas();
-          startBtn.textContent = "Listening";
-          startBtn.classList.remove("primary");
-          controlDock.classList.remove("setup-mode");
-          updateStatus("active");
-          loop();
-        } catch (err) {
-          alert("Microphone error: " + err.message);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        if (audioCtx.state === "suspended") {
+          await audioCtx.resume();
         }
-      });
-
-      document.getElementById("reset-btn").addEventListener("click", () => {
-        progress = 0;
-        strikes = 0;
-        isLockedOut = false;
-        lockoutOverlay.style.display = "none";
-        updateStrikesUI();
-        updateProgressUI();
-        updateStatus(isRunning ? "active" : "standby");
-      });
-
-      document.getElementById("manual-strike-btn").addEventListener("click", () => {
-        if (!isLockedOut) triggerStrike();
-      });
-
-      function updateStatus(stateKey) {
-        currentState = stateKey;
-        const t = themes[currentTheme];
-        statusText.textContent = t.status[stateKey] || stateKey;
-
-        const pillClass = (stateKey === "unlocked") ? "active" : stateKey;
-        statusPill.className = "glass-pill liquid-glass status-pill " + pillClass;
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 128;
+        source = audioCtx.createMediaStreamSource(stream);
+        source.connect(analyser);
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
         
-        document.body.classList.remove("warning-state", "danger-state");
-        if (stateKey === "warning") document.body.classList.add("warning-state");
-        if (stateKey === "danger") document.body.classList.add("danger-state");
+        isRunning = true;
+        lastFrameTime = Date.now();
+        resizeCanvas();
+        startBtn.textContent = "Listening";
+        startBtn.classList.remove("primary");
+        document.getElementById("control-dock").classList.remove("setup-mode");
+        updateStatus("active");
+        loop();
+      } catch (err) {
+        alert("Microphone access error: " + err.message);
       }
+    }
 
-      function updateStrikesUI() {
-        for (let i = 1; i <= 3; i++) {
-          const dot = document.getElementById(`strike-${i}`);
-          if (i <= strikes) dot.classList.add("active");
-          else dot.classList.remove("active");
+    function resetMonitor() {
+      progress = 0;
+      strikes = 0;
+      isLockedOut = false;
+      document.getElementById("lockout-overlay").style.display = "none";
+      updateStrikesUI();
+      updateProgressUI();
+      updateStatus(isRunning ? "active" : "standby");
+    }
+
+    function manualStrike() {
+      if (!isLockedOut) triggerStrike();
+    }
+
+    function updateStatus(stateKey) {
+      currentState = stateKey;
+      const t = themes[currentTheme];
+      document.getElementById("status-text").textContent = t.status[stateKey] || stateKey;
+
+      const pillClass = (stateKey === "unlocked") ? "active" : stateKey;
+      document.getElementById("status-pill").className = "glass-pill liquid-glass status-pill " + pillClass;
+      
+      document.body.classList.remove("warning-state", "danger-state");
+      if (stateKey === "warning") document.body.classList.add("warning-state");
+      if (stateKey === "danger") document.body.classList.add("danger-state");
+    }
+
+    function updateStrikesUI() {
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById("strike-" + i);
+        if (i <= strikes) dot.classList.add("active");
+        else dot.classList.remove("active");
+      }
+    }
+
+    function updateProgressUI() {
+      const clamped = Math.min(100, Math.max(0, progress));
+      document.getElementById("progress-fill").style.width = clamped + "%";
+      document.getElementById("percent-text").textContent = clamped.toFixed(1) + "%";
+
+      if (clamped >= 100) {
+        updateStatus("unlocked");
+      }
+    }
+
+    function triggerStrike() {
+      const now = Date.now();
+      if (now - lastStrikeTime < 2000) return;
+      lastStrikeTime = now;
+
+      strikes++;
+      updateStrikesUI();
+
+      document.body.classList.add("alarm-flash");
+      setTimeout(() => document.body.classList.remove("alarm-flash"), 250);
+
+      progress = Math.max(0, progress - 2);
+      updateProgressUI();
+
+      if (strikes >= 3) {
+        startLockout();
+      } else {
+        updateStatus("danger");
+      }
+    }
+
+    function startLockout() {
+      isLockedOut = true;
+      const overlay = document.getElementById("lockout-overlay");
+      const timer = document.getElementById("cooldown-timer");
+      overlay.style.display = "flex";
+      let secondsLeft = 10;
+      timer.textContent = "00:" + secondsLeft;
+
+      const interval = setInterval(() => {
+        secondsLeft--;
+        timer.textContent = "00:" + (secondsLeft < 10 ? "0" : "") + secondsLeft;
+        if (secondsLeft <= 0) {
+          clearInterval(interval);
+          isLockedOut = false;
+          strikes = 0;
+          updateStrikesUI();
+          overlay.style.display = "none";
+          updateStatus("active");
         }
+      }, 1000);
+    }
+
+    function drawPitchLines() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 1.5;
+
+      ctx.beginPath();
+      ctx.moveTo(w / 2, 0);
+      ctx.lineTo(w / 2, h);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(w / 2, h / 2, Math.min(w, h) * 0.32, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const boxW = w * 0.11;
+      const boxH = h * 0.65;
+      ctx.strokeRect(0, (h - boxH) / 2, boxW, boxH);
+      ctx.strokeRect(w - boxW, (h - boxH) / 2, boxW, boxH);
+      ctx.restore();
+    }
+
+    function loop() {
+      requestAnimationFrame(loop);
+      const now = Date.now();
+      const deltaSeconds = (now - lastFrameTime) / 1000;
+      lastFrameTime = now;
+
+      analyser.getByteFrequencyData(dataArray);
+
+      let sum = 0;
+      const usableBins = Math.floor(dataArray.length * 0.65);
+      for (let i = 0; i < usableBins; i++) {
+        sum += dataArray[i];
+      }
+      const averageVolume = (sum / usableBins) / 2.55;
+      const threshold = parseInt(document.getElementById("threshold").value, 10);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (currentTheme === "football") {
+        drawPitchLines();
       }
 
-      function updateProgressUI() {
-        const clamped = Math.min(100, Math.max(0, progress));
-        progressFill.style.width = `${clamped}%`;
-        percentText.textContent = `${clamped.toFixed(1)}%`;
+      const threshY = canvas.height - (threshold / 100) * canvas.height;
+      ctx.beginPath();
+      ctx.moveTo(0, threshY);
+      ctx.lineTo(canvas.width, threshY);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+      ctx.setLineDash([4, 6]);
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-        if (clamped >= 100) {
-          updateStatus("unlocked");
-        }
-      }
+      const accentRgb = getComputedStyle(document.body).getPropertyValue("--accent-rgb").trim() || "52, 211, 153";
 
-      function triggerStrike() {
-        const now = Date.now();
-        if (now - lastStrikeTime < 2000) return;
-        lastStrikeTime = now;
+      const gap = 7;
+      const totalBars = usableBins;
+      const barWidth = Math.max(2, (canvas.width - (gap * (totalBars - 1))) / totalBars);
 
-        strikes++;
-        updateStrikesUI();
+      for (let i = 0; i < totalBars; i++) {
+        const value = dataArray[i] / 255;
+        const barHeight = Math.max(8, value * canvas.height);
+        const x = i * (barWidth + gap);
+        const y = canvas.height - barHeight;
 
-        document.body.classList.add("alarm-flash");
-        setTimeout(() => document.body.classList.remove("alarm-flash"), 250);
-
-        progress = Math.max(0, progress - 2);
-        updateProgressUI();
-
-        if (strikes >= 3) {
-          startLockout();
+        const gradient = ctx.createLinearGradient(0, y, 0, canvas.height);
+        if (averageVolume > threshold) {
+          gradient.addColorStop(0, "rgba(248, 113, 113, 0.95)");
+          gradient.addColorStop(1, "rgba(239, 68, 68, 0.25)");
+        } else if (averageVolume > threshold * 0.8) {
+          gradient.addColorStop(0, "rgba(251, 191, 36, 0.95)");
+          gradient.addColorStop(1, "rgba(245, 158, 11, 0.25)");
         } else {
-          updateStatus("danger");
-        }
-      }
-
-      function startLockout() {
-        isLockedOut = true;
-        lockoutOverlay.style.display = "flex";
-        let secondsLeft = 10;
-        cooldownTimer.textContent = `00:${secondsLeft}`;
-
-        const interval = setInterval(() => {
-          secondsLeft--;
-          cooldownTimer.textContent = `00:${secondsLeft < 10 ? "0" : ""}${secondsLeft}`;
-          if (secondsLeft <= 0) {
-            clearInterval(interval);
-            isLockedOut = false;
-            strikes = 0;
-            updateStrikesUI();
-            lockoutOverlay.style.display = "none";
-            updateStatus("active");
-          }
-        }, 1000);
-      }
-
-      function drawPitchLines() {
-        const w = canvas.width;
-        const h = canvas.height;
-        ctx.save();
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-        ctx.lineWidth = 1.5;
-
-        ctx.beginPath();
-        ctx.moveTo(w / 2, 0);
-        ctx.lineTo(w / 2, h);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(w / 2, h / 2, Math.min(w, h) * 0.32, 0, Math.PI * 2);
-        ctx.stroke();
-
-        const boxW = w * 0.11;
-        const boxH = h * 0.65;
-        ctx.strokeRect(0, (h - boxH) / 2, boxW, boxH);
-        ctx.strokeRect(w - boxW, (h - boxH) / 2, boxW, boxH);
-        ctx.restore();
-      }
-
-      function loop() {
-        requestAnimationFrame(loop);
-        const now = Date.now();
-        const deltaSeconds = (now - lastFrameTime) / 1000;
-        lastFrameTime = now;
-
-        analyser.getByteFrequencyData(dataArray);
-
-        let sum = 0;
-        const usableBins = Math.floor(dataArray.length * 0.65);
-        for (let i = 0; i < usableBins; i++) {
-          sum += dataArray[i];
-        }
-        const averageVolume = (sum / usableBins) / 2.55;
-        const threshold = parseInt(thresholdSlider.value, 10);
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (currentTheme === "football") {
-          drawPitchLines();
+          gradient.addColorStop(0, "rgba(255, 255, 255, 0.85)");
+          gradient.addColorStop(1, "rgba(" + accentRgb + ", 0.28)");
         }
 
-        const threshY = canvas.height - (threshold / 100) * canvas.height;
+        ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.moveTo(0, threshY);
-        ctx.lineTo(canvas.width, threshY);
-        ctx.strokeStyle = "rgba(255, 255,
+        ctx.roundRect(x, y, barWidth, barHeight, 6);
+        ctx.fill();
+      }
+
+      if (!isLockedOut && progress < 100) {
+        if (averageVolume > threshold) {
+          triggerStrike();
+        } else if (averageVolume > threshold * 0.8) {
+          updateStatus("warning");
+        } else {
+          updateStatus("active");
+          const totalSecondsNeeded = parseInt(document.getElementById("duration").value, 10) * 60;
+          progress += (deltaSeconds / totalSecondsNeeded) * 100;
+          updateProgressUI();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
