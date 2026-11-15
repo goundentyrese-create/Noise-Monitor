@@ -44,7 +44,7 @@
       --orb-2: rgba(59, 130, 246, 0.28);
     }
 
-    /* Alert States Override Orbs */
+    /* Alert States */
     body.warning-state {
       --orb-1: rgba(245, 158, 11, 0.42);
       --orb-2: rgba(251, 146, 60, 0.28);
@@ -80,7 +80,7 @@
       background-color: #2a080d;
     }
 
-    /* Ambient Liquid Orbs Behind Glass */
+    /* Ambient Liquid Orbs */
     .ambient-canvas {
       position: fixed;
       inset: 0;
@@ -124,7 +124,7 @@
       100% { transform: translate(-4%, 4%) scale(0.96); }
     }
 
-    /* Reusable Liquid Glass Surface */
+    /* Liquid Glass Surface */
     .liquid-glass {
       background: var(--glass-bg);
       backdrop-filter: blur(28px) saturate(180%);
@@ -188,7 +188,6 @@
       margin-right: 0.2rem;
     }
 
-    /* Default Strike Dots */
     .strike-dot {
       width: 10px;
       height: 10px;
@@ -204,7 +203,7 @@
       transform: scale(1.25);
     }
 
-    /* Football Theme: Referee Cards instead of Dots */
+    /* Football Theme Cards */
     body[data-theme="football"] .strike-dot {
       width: 11px;
       height: 15px;
@@ -222,7 +221,7 @@
       box-shadow: 0 0 16px #ef4444, inset 0 1px 1px rgba(255, 255, 255, 0.7);
     }
 
-    /* Main Glass Card Stage */
+    /* Main Stage */
     main {
       position: relative;
       z-index: 2;
@@ -298,7 +297,7 @@
       min-width: 170px;
     }
 
-    /* Liquid Progress Track */
+    /* Progress Track */
     .progress-track {
       width: 100%;
       height: 14px;
@@ -332,19 +331,27 @@
       display: block;
     }
 
-    /* Lockout Modal */
+    /* Lockout Modal (Fixed pointer-events bug) */
     #lockout-overlay {
       position: fixed;
       inset: 0;
       background: rgba(5, 7, 12, 0.72);
       backdrop-filter: blur(36px) saturate(160%);
       -webkit-backdrop-filter: blur(36px) saturate(160%);
-      display: none;
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 50;
+      z-index: 100;
       gap: 0.75rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    #lockout-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .lockout-card {
@@ -428,6 +435,8 @@
       font-size: 0.78rem;
       font-weight: 600;
       transition: all 0.2s ease;
+      position: relative;
+      z-index: 15;
     }
 
     button:hover {
@@ -453,13 +462,15 @@
       color: #ffffff;
     }
 
-    /* Theme Segmented Pill */
+    /* Segmented Theme Switcher */
     .segmented-control {
       display: flex;
       background: rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 999px;
       padding: 2px;
+      position: relative;
+      z-index: 15;
     }
 
     .seg-btn {
@@ -482,11 +493,13 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
-    /* Color Swatches */
+    /* Colour Swatches */
     .swatches {
       display: flex;
       align-items: center;
       gap: 0.45rem;
+      position: relative;
+      z-index: 15;
     }
 
     .swatch {
@@ -516,6 +529,9 @@
       background: rgba(255, 255, 255, 0.16);
       border-radius: 999px;
       outline: none;
+      position: relative;
+      z-index: 15;
+      cursor: pointer;
     }
 
     input[type="range"]::-webkit-slider-thumb {
@@ -539,6 +555,8 @@
       font-size: 0.8rem;
       font-weight: 600;
       outline: none;
+      position: relative;
+      z-index: 15;
     }
   </style>
 </head>
@@ -676,4 +694,45 @@
     const statusPill = document.getElementById('status-pill');
     const statusText = document.getElementById('status-text');
     const progressFill = document.getElementById('progress-fill');
-    const percentText = document.getElementById('
+    const percentText = document.getElementById('percent-text');
+    const thresholdSlider = document.getElementById('threshold');
+    const durationInput = document.getElementById('duration');
+    const lockoutOverlay = document.getElementById('lockout-overlay');
+    const cooldownTimer = document.getElementById('cooldown-timer');
+    const controlDock = document.getElementById('control-dock');
+    const startBtn = document.getElementById('start-btn');
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Theme Switcher Logic
+    document.querySelectorAll('[data-set-theme]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentTheme = btn.dataset.setTheme;
+        document.body.dataset.theme = currentTheme;
+
+        document.querySelectorAll('[data-set-theme]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const t = themes[currentTheme];
+        document.getElementById('theme-kicker').textContent = t.kicker;
+        document.getElementById('strikes-label').textContent = t.strikesLabel;
+        document.getElementById('reward-tag').textContent = t.rewardTag;
+        document.getElementById('manual-strike-btn').textContent = t.strikeBtn;
+        document.getElementById('lockout-title').textContent = t.lockoutTitle;
+        document.getElementById('lockout-desc').textContent = t.lockoutDesc;
+
+        updateStatus(currentState);
+      });
+    });
+
+    // Colour Scheme Switcher Logic
+    document.querySelectorAll('[data-set-color]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.body.dataset.color = btn.dataset.setColor;
+        document.querySelectorAll('[data-set-color]').forEach(b => b.classList.remove('active'));
+        btn.classList
