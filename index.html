@@ -42,6 +42,35 @@
       --orb-2: rgba(59, 130, 246, 0.28);
     }
 
+    /* iPhone 18 Pro Finishes */
+    body[data-color="burgundy"] {
+      --accent: #b83b50;
+      --accent-rgb: 184, 59, 80;
+      --orb-1: rgba(77, 24, 33, 0.65);
+      --orb-2: rgba(184, 59, 80, 0.32);
+    }
+
+    body[data-color="glacier"] {
+      --accent: #bae6fd;
+      --accent-rgb: 186, 230, 253;
+      --orb-1: rgba(232, 242, 255, 0.35);
+      --orb-2: rgba(125, 211, 252, 0.28);
+    }
+
+    body[data-color="black"] {
+      --accent: #a1a1aa;
+      --accent-rgb: 161, 161, 170;
+      --orb-1: rgba(60, 60, 60, 0.65);
+      --orb-2: rgba(113, 113, 122, 0.3);
+    }
+
+    body[data-color="silver"] {
+      --accent: #f4f4f5;
+      --accent-rgb: 244, 244, 245;
+      --orb-1: rgba(247, 247, 247, 0.35);
+      --orb-2: rgba(161, 161, 170, 0.28);
+    }
+
     body.warning-state {
       --orb-1: rgba(245, 158, 11, 0.42);
       --orb-2: rgba(251, 146, 60, 0.28);
@@ -599,6 +628,10 @@
       <button type="button" id="col-blue" class="swatch" onclick="setColor('blue')" style="background: #38bdf8;" title="Electric Blue"></button>
       <button type="button" id="col-sunset" class="swatch" onclick="setColor('sunset')" style="background: #fb923c;" title="Sunset"></button>
       <button type="button" id="col-purple" class="swatch" onclick="setColor('purple')" style="background: #c084fc;" title="Ultraviolet"></button>
+      <button type="button" id="col-burgundy" class="swatch" onclick="setColor('burgundy')" style="background: #4D1821;" title="iPhone 18 Pro: Burgundy"></button>
+      <button type="button" id="col-glacier" class="swatch" onclick="setColor('glacier')" style="background: #E8F2FF;" title="iPhone 18 Pro: Glacier"></button>
+      <button type="button" id="col-black" class="swatch" onclick="setColor('black')" style="background: #3C3C3C;" title="iPhone 18 Pro: Black"></button>
+      <button type="button" id="col-silver" class="swatch" onclick="setColor('silver')" style="background: #F7F7F7;" title="iPhone 18 Pro: Silver"></button>
     </div>
 
     <div class="divider"></div>
@@ -692,7 +725,7 @@
 
     function setColor(colorName) {
       document.body.setAttribute("data-color", colorName);
-      ["emerald", "blue", "sunset", "purple"].forEach(c => {
+      ["emerald", "blue", "sunset", "purple", "burgundy", "glacier", "black", "silver"].forEach(c => {
         document.getElementById("col-" + c).classList.toggle("active", c === colorName);
       });
     }
