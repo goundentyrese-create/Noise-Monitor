@@ -8,11 +8,11 @@
     :root {
       --bg-base: #070a10;
       
-      /* GPU-Safe Solid Frosted Glass Surface */
       --glass-surface: #141b2d;
-      --glass-pill-fill: #1e293b;
-      --glass-border: 1px solid rgba(255, 255, 255, 0.25);
-      --glass-border-top: 1px solid rgba(255, 255, 255, 0.4);
+      --glass-btn-fill: #243049;
+      --glass-btn-hover: #30405f;
+      --glass-border: 1px solid rgba(255, 255, 255, 0.28);
+      --glass-border-top: 1px solid rgba(255, 255, 255, 0.45);
       --glass-shadow: 0 16px 32px rgba(0, 0, 0, 0.6);
       
       --accent: #34d399;
@@ -195,7 +195,7 @@
       border-radius: 999px;
       font-size: 0.9rem;
       font-weight: 600;
-      background-color: var(--glass-pill-fill);
+      background-color: var(--glass-btn-fill);
       border: var(--glass-border);
       border-top: var(--glass-border-top);
     }
@@ -314,7 +314,7 @@
       gap: 0.5rem;
       padding: 0.45rem 1.3rem;
       border-radius: 999px;
-      background-color: var(--glass-pill-fill);
+      background-color: var(--glass-btn-fill);
       border: var(--glass-border);
       border-top: var(--glass-border-top);
     }
@@ -456,7 +456,7 @@
     /* Tactile Glass Buttons */
     button.glass-btn {
       position: relative;
-      background-color: var(--glass-pill-fill);
+      background-color: var(--glass-btn-fill);
       color: #ffffff;
       border: var(--glass-border);
       border-top: var(--glass-border-top);
@@ -471,7 +471,7 @@
     }
 
     button.glass-btn:hover {
-      background-color: #283548;
+      background-color: var(--glass-btn-hover);
       border-color: rgba(255, 255, 255, 0.6);
       transform: scale(1.04);
     }
@@ -487,291 +487,4 @@
       box-shadow: 0 6px 20px rgba(255, 255, 255, 0.35);
     }
 
-    button.glass-btn.danger {
-      color: #fee2e2;
-      background-color: rgba(239, 68, 68, 0.4);
-      border: 1px solid rgba(248, 113, 113, 0.6);
-    }
-
-    button.glass-btn.danger:hover {
-      background-color: rgba(239, 68, 68, 0.85);
-      color: #ffffff;
-    }
-
-    /* Sliding Pill Switcher */
-    .segmented-control {
-      position: relative;
-      display: flex;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 999px;
-      padding: 3px;
-    }
-
-    .glass-glider {
-      position: absolute;
-      top: 3px;
-      bottom: 3px;
-      left: 3px;
-      width: calc(50% - 3px);
-      border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      transition: transform 0.38s cubic-bezier(0.32, 1.45, 0.52, 1);
-      pointer-events: none;
-    }
-
-    .seg-btn {
-      position: relative;
-      z-index: 2;
-      width: 76px;
-      background: transparent;
-      border: none;
-      padding: 0.35rem 0;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.7);
-      cursor: pointer;
-      transition: color 0.25s ease;
-    }
-
-    .seg-btn.active {
-      color: #ffffff;
-    }
-
-    /* Colour Swatches */
-    .swatches {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      padding: 0.3rem 0.55rem;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 999px;
-    }
-
-    .swatch {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      padding: 0;
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      cursor: pointer;
-      transition: transform 0.25s ease;
-    }
-
-    .swatch:hover {
-      transform: scale(1.2);
-    }
-
-    .swatch.active {
-      border-color: #ffffff;
-      transform: scale(1.25);
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
-    }
-
-    /* Fluid Slider */
-    .glass-slider-wrap {
-      position: relative;
-      width: 96px;
-      height: 26px;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-      touch-action: none;
-    }
-
-    .glass-slider-track {
-      position: relative;
-      width: 100%;
-      height: 8px;
-      background: rgba(0, 0, 0, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 999px;
-      overflow: hidden;
-      transition: height 0.3s ease;
-    }
-
-    .glass-slider-wrap:hover .glass-slider-track,
-    .glass-slider-wrap.dragging .glass-slider-track {
-      height: 12px;
-      border-color: rgba(255, 255, 255, 0.45);
-    }
-
-    .glass-slider-fill {
-      height: 100%;
-      width: 43.75%;
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), var(--accent));
-      border-radius: 999px;
-    }
-
-    .glass-slider-thumb {
-      position: absolute;
-      top: 50%;
-      left: 43.75%;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background-color: #ffffff;
-      border: 2px solid rgba(255, 255, 255, 0.95);
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
-      transform: translate(-50%, -50%) scale(1);
-      transition: transform 0.25s ease;
-      pointer-events: none;
-    }
-
-    .glass-slider-wrap:hover .glass-slider-thumb {
-      transform: translate(-50%, -50%) scale(1.15);
-    }
-
-    .sr-slider {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-      margin: 0;
-    }
-
-    input[type="number"] {
-      width: 46px;
-      background: rgba(0, 0, 0, 0.5);
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 999px;
-      padding: 0.35rem 0.2rem;
-      text-align: center;
-      font-size: 0.82rem;
-      font-weight: 600;
-      outline: none;
-    }
-  </style>
-</head>
-<body data-theme="stealth" data-color="emerald">
-
-  <div class="ambient-canvas">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
-
-  <header>
-    <div id="status-pill" class="glass-pill liquid-glass status-pill">
-      <div class="status-dot"></div>
-      <span id="status-text">Standby</span>
-    </div>
-
-    <div class="glass-pill liquid-glass">
-      <span class="strikes-label" id="strikes-label">Alerts</span>
-      <div class="strike-dot" id="strike-1"></div>
-      <div class="strike-dot" id="strike-2"></div>
-      <div class="strike-dot" id="strike-3"></div>
-    </div>
-  </header>
-
-  <main class="liquid-glass">
-    <div class="hero-metric">
-      <div class="theme-kicker" id="theme-kicker">Acoustic Stealth Protocol</div>
-      <div class="percentage-display" id="percent-text">0.0%</div>
-      <div class="reward-capsule">
-        <span class="reward-tag" id="reward-tag">Target</span>
-        <input type="text" class="reward-input" value="5 Mins Free Time" id="reward-text" aria-label="Reward Goal">
-      </div>
-    </div>
-
-    <div class="progress-track">
-      <div class="progress-fill" id="progress-fill"></div>
-    </div>
-
-    <div class="visualizer-wrapper">
-      <canvas id="visualizer"></canvas>
-    </div>
-  </main>
-
-  <div id="lockout-overlay">
-    <div class="lockout-card liquid-glass">
-      <h1 id="lockout-title">System Lockdown</h1>
-      <p id="lockout-desc">Noise threshold breached. Decryption paused.</p>
-      <div id="cooldown-timer">00:10</div>
-    </div>
-  </div>
-
-  <footer id="control-dock" class="liquid-glass setup-mode">
-    <button type="button" id="start-btn" class="glass-btn primary" onclick="startMic()">Start Mic</button>
-    <button type="button" id="reset-btn" class="glass-btn" onclick="resetMonitor()">Reset</button>
-
-    <div class="divider"></div>
-
-    <!-- Sliding Glass Pill Switcher -->
-    <div class="segmented-control">
-      <div class="glass-glider" id="theme-glider"></div>
-      <button type="button" id="btn-stealth" class="seg-btn active" onclick="setTheme('stealth')">Stealth</button>
-      <button type="button" id="btn-football" class="seg-btn" onclick="setTheme('football')">Football</button>
-    </div>
-
-    <!-- Colour Swatches -->
-    <div class="swatches">
-      <button type="button" id="col-emerald" class="swatch active" onclick="setColor('emerald')" style="background: #34d399;" title="Emerald"></button>
-      <button type="button" id="col-blue" class="swatch" onclick="setColor('blue')" style="background: #38bdf8;" title="Electric Blue"></button>
-      <button type="button" id="col-sunset" class="swatch" onclick="setColor('sunset')" style="background: #fb923c;" title="Sunset"></button>
-      <button type="button" id="col-purple" class="swatch" onclick="setColor('purple')" style="background: #c084fc;" title="Ultraviolet"></button>
-      <button type="button" id="col-burgundy" class="swatch" onclick="setColor('burgundy')" style="background: #4D1821;" title="iPhone 18 Pro: Burgundy"></button>
-      <button type="button" id="col-glacier" class="swatch" onclick="setColor('glacier')" style="background: #E8F2FF;" title="iPhone 18 Pro: Glacier"></button>
-      <button type="button" id="col-black" class="swatch" onclick="setColor('black')" style="background: #3C3C3C;" title="iPhone 18 Pro: Black"></button>
-      <button type="button" id="col-silver" class="swatch" onclick="setColor('silver')" style="background: #F7F7F7;" title="iPhone 18 Pro: Silver"></button>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- Fluid Slider -->
-    <div class="control-group">
-      <label for="threshold">Limit</label>
-      <div class="glass-slider-wrap" id="limit-slider-wrap">
-        <div class="glass-slider-track">
-          <div class="glass-slider-fill" id="slider-fill"></div>
-        </div>
-        <div class="glass-slider-thumb" id="slider-thumb"></div>
-        <input type="range" class="sr-slider" id="threshold" min="10" max="90" value="45">
-      </div>
-    </div>
-
-    <div class="control-group">
-      <label for="duration">Mins</label>
-      <input type="number" id="duration" min="1" max="60" value="10">
-    </div>
-
-    <div class="divider"></div>
-
-    <button type="button" id="manual-strike-btn" class="glass-btn danger" onclick="manualStrike()">Alert</button>
-  </footer>
-
-  <script>
-    let audioCtx, analyser, dataArray, source;
-    let isRunning = false;
-    let isLockedOut = false;
-    let progress = 0;
-    let strikes = 0;
-    let lastStrikeTime = 0;
-    let lastFrameTime = Date.now();
-    let currentTheme = "stealth";
-    let currentState = "standby";
-
-    const themes = {
-      stealth: {
-        kicker: "Acoustic Stealth Protocol",
-        strikesLabel: "Alerts",
-        rewardTag: "Target",
-        strikeBtn: "Alert",
-        lockoutTitle: "System Lockdown",
-        lockoutDesc: "Noise threshold breached. Decryption paused.",
-        status: {
-          standby: "Standby",
-          active: "Stealth Optimal",
-          warning: "Approaching Limit",
-          danger: "Noise Spike",
-          unlocked: "Target Unlocked"
-        }
-      },
+    button.glass
